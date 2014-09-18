@@ -21,6 +21,8 @@ import static cursor.mapper.log.LogUtils.makeLogTag;
 
 import android.database.Cursor;
 
+import java.lang.reflect.Field;
+
 import cursor.mapper.cursor.extractor.ColumnExtractor;
 import cursor.mapper.cursor.extractor.ColumnExtractorFactory;
 
@@ -37,7 +39,7 @@ public class CursorExtractor {
         mColumnExtractorFactory = factory;
     }
 
-    public Object extract(Cursor cursor, String columnName, Class<?> fieldType) {
+    public Object extract(Cursor cursor, String columnName, Field fieldType) {
         int columnIndex = cursor.getColumnIndex(columnName);
 
         ColumnExtractor columnExtractor = mColumnExtractorFactory.get(fieldType);

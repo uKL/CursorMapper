@@ -19,11 +19,14 @@ package cursor.mapper.cursor.extractor;
 import static cursor.mapper.log.LogUtils.LOGV;
 import static cursor.mapper.log.LogUtils.makeLogTag;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ColumnExtractorFactory {
+
     private static class SingletonHolder {
+
         public static final ColumnExtractorFactory INSTANCE = new ColumnExtractorFactory();
     }
 
@@ -59,6 +62,10 @@ public class ColumnExtractorFactory {
         ShortExtractor shortExtractor = new ShortExtractor();
         addExtractor(short.class, shortExtractor);
         addExtractor(Short.class, shortExtractor);
+
+        BooleanExtractor booleanExtractor = new BooleanExtractor();
+        addExtractor(boolean.class, booleanExtractor);
+        addExtractor(Boolean.class, booleanExtractor);
     }
 
     public void addExtractor(Class<?> type, ColumnExtractor extractor) {
@@ -66,8 +73,8 @@ public class ColumnExtractorFactory {
         mExtractors.put(type, extractor);
     }
 
-    public ColumnExtractor get(Class<?> fieldType) {
-        return mExtractors.get(fieldType);
+    public ColumnExtractor get(Field fieldType) {
+        Class<?> type = fieldType.getType();
+        return mExtractors.containsKey(type) ? mExtractors.get(type) : new RecursiveExtractor(type);
     }
-
 }

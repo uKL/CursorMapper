@@ -16,26 +16,32 @@
 
 package cursor.mapper;
 
+import static android.text.TextUtils.isEmpty;
+
 import static cursor.mapper.log.LogUtils.LOGW;
 import static cursor.mapper.log.LogUtils.makeLogTag;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import cursor.mapper.annotation.CursorName;
 import cursor.mapper.contentvalues.GenericContentValuesWriter;
 import cursor.mapper.cursor.CursorExtractor;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
 public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
-    public static final String TAG = makeLogTag(AnnotatedCursorMapper.class);
 
+    public static final String TAG = makeLogTag(AnnotatedCursorMapper.class);
+    public static final int NO_LIMIT = 0;
+    private HashMap<Field, String> mAnnotationValues;
     private Class<S> mClazz;
     private CursorExtractor mCursorExtractor;
+    private AnnotationCache mAnnotationCache;
     private boolean mIsIgnoringNull = false;
 
     public AnnotatedCursorMapper(Class<S> clazz) {
@@ -45,17 +51,22 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
     public AnnotatedCursorMapper(CursorExtractor extractor, Class<S> clazz) {
         mCursorExtractor = extractor;
         mClazz = clazz;
+        setAnnotationCache(AnnotationCache.getInstance());
+        initializeAnnotationValues(getAnnotatedFields(clazz));
+    }
+
+    public void setAnnotationCache(AnnotationCache annotationCache) {
+        mAnnotationCache = annotationCache;
     }
 
     @Override
     public ContentValues toContentValues(S model) {
         validateNotNull(model);
-        List<Field> annotatedFields = getAnnotatedFields();
 
-        ContentValues contentValues = new ContentValues(annotatedFields.size());
+        ContentValues contentValues = new ContentValues(mAnnotationValues.size());
         GenericContentValuesWriter writer = new GenericContentValuesWriter(contentValues);
 
-        for (Field field : annotatedFields) {
+        for (Field field : mAnnotationValues.keySet()) {
             Object fieldValue = getFieldValue(model, field);
 
             if (!isIgnored(fieldValue)) {
@@ -80,6 +91,36 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
         return instance;
     }
 
+    @Override
+    public List<S> toObjectList(Cursor cursor) {
+        return toObjectList(cursor, NO_LIMIT, true);
+    }
+
+    @Override
+    public List<S> toObjectList(Cursor cursor, int limit, boolean moveToFirst) {
+        List<S> objects = new ArrayList<S>();
+        int currentItem = 0;
+
+        if (cursor != null && moveToFirst(cursor, moveToFirst)) {
+
+            while (!cursor.isAfterLast() && (limit == NO_LIMIT || currentItem < limit)) {
+                objects.add(toObject(cursor));
+                cursor.moveToNext();
+                currentItem++;
+            }
+        }
+
+        return objects;
+
+    }
+
+    private void cacheAnnotatedFields(Class<S> clazz, List<Field> annotatedFields) {
+
+        if (mAnnotationCache != null) {
+            mAnnotationCache.put(clazz, annotatedFields);
+        }
+    }
+
     private S createInstance() {
         try {
             return (S) mClazz.newInstance();
@@ -93,33 +134,42 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
     }
 
     private void fillWithData(S model, Cursor cursor) {
-        List<Field> annotatedFields = getAnnotatedFields();
 
-        for (Field field : annotatedFields) {
+        for (Field field : mAnnotationValues.keySet()) {
             String columnName = findColumnName(field);
 
-            if (mCursorExtractor.hasColumn(cursor, columnName)) {
+            if (isRecursive(columnName) || mCursorExtractor.hasColumn(cursor, columnName)) {
                 setField(cursor, columnName, model, field);
             }
         }
     }
 
     private String findColumnName(Field field) {
+        String value = mAnnotationValues.get(field);
+        return value != null ? value : findColumnNameInAnnotation(field);
+    }
+
+    private String findColumnNameInAnnotation(Field field) {
         return field.getAnnotation(CursorName.class).value();
     }
 
-    private List<Field> getAnnotatedFields() {
-        List<Field> annotatedFields = new ArrayList<Field>();
-        Field[] declaredFields = mClazz.getDeclaredFields();
+    private List<Field> getAnnotatedFields(Class<S> clazz) {
 
-        for (Field field : declaredFields) {
+        if (mAnnotationCache != null && mAnnotationCache.contains(clazz)) {
+            return mAnnotationCache.get(clazz);
+        } else {
+            List<Field> annotatedFields = new ArrayList<Field>();
 
-            if (hasMappingAnnotation(field)) {
-                annotatedFields.add(field);
+            for (Field field : clazz.getDeclaredFields()) {
+
+                if (hasMappingAnnotation(field)) {
+                    annotatedFields.add(field);
+                }
             }
-        }
 
-        return annotatedFields;
+            cacheAnnotatedFields(clazz, annotatedFields);
+            return annotatedFields;
+        }
     }
 
     private Object getFieldValue(S model, Field field) {
@@ -134,6 +184,10 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
         }
     }
 
+    private boolean hasInCache(Class<S> clazz) {
+        return mAnnotationCache != null && mAnnotationCache.contains(clazz);
+    }
+
     private boolean hasMappingAnnotation(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
 
@@ -146,12 +200,28 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
         return false;
     }
 
+    private void initializeAnnotationValues(List<Field> annotatedFields) {
+        mAnnotationValues = new HashMap<Field, String>();
+
+        for (Field annotatedField : annotatedFields) {
+            mAnnotationValues.put(annotatedField, findColumnNameInAnnotation(annotatedField));
+        }
+    }
+
     private boolean isIgnored(Object fieldValue) {
         return mIsIgnoringNull && fieldValue == null;
     }
 
+    private boolean isRecursive(String columnName) {
+        return isEmpty(columnName);
+    }
+
+    private boolean moveToFirst(Cursor cursor, boolean moveToFirst) {
+        return moveToFirst ? cursor.moveToFirst() : true;
+    }
+
     private void setField(Cursor cursor, String columnName, S model, Field field) {
-        Object extractedValue = mCursorExtractor.extract(cursor, columnName, field.getType());
+        Object extractedValue = mCursorExtractor.extract(cursor, columnName, field);
 
         if (extractedValue != null) {
             setValue(model, field, extractedValue);
@@ -159,7 +229,9 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
     }
 
     private void setValue(S model, Field field, Object extractedValue) {
+
         try {
+            field.setAccessible(true);
             field.set(model, extractedValue);
         } catch (IllegalArgumentException e) {
             LOGW(TAG, "Unable to set field: " + field);

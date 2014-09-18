@@ -19,8 +19,14 @@ package cursor.mapper;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import java.util.List;
+
 public interface CursorMapper<T> {
     T toObject(Cursor cursor);
 
     ContentValues toContentValues(T model);
+
+    List<T> toObjectList(Cursor cursor);
+
+    List<T> toObjectList(Cursor cursor, int limit, boolean moveToFirst);
 }
