@@ -32,7 +32,8 @@ public class ColumnExtractorFactory {
     private Map<Class<?>, ColumnExtractor> mExtractors = new HashMap<Class<?>, ColumnExtractor>();
 
     public ColumnExtractorFactory() {
-        addExtractor(String.class, new StringExtractor());
+        StringExtractor stringExtractor = new StringExtractor();
+        addExtractor(String.class, stringExtractor);
 
         LongExtractor longExtractor = new LongExtractor();
         addExtractor(long.class, longExtractor);
@@ -43,6 +44,7 @@ public class ColumnExtractorFactory {
         addExtractor(double.class, doubleExtractor);
 
         addExtractor(byte[].class, new BlobExtractor());
+        addExtractor(byte.class, new ByteExtractor());
 
         FloatExtractor floatExtractor = new FloatExtractor();
         addExtractor(float.class, floatExtractor);
@@ -59,6 +61,9 @@ public class ColumnExtractorFactory {
         BooleanExtractor booleanExtractor = new BooleanExtractor();
         addExtractor(boolean.class, booleanExtractor);
         addExtractor(Boolean.class, booleanExtractor);
+
+        EnumExtractor enumtExtractor = new EnumExtractor(stringExtractor);
+        addExtractor(Enum.class, enumtExtractor);
     }
 
     public static ColumnExtractorFactory getInstance() {
@@ -71,7 +76,18 @@ public class ColumnExtractorFactory {
     }
 
     public ColumnExtractor get(Field fieldType) {
-        Class<?> type = fieldType.getType();
+        Class<?> type = getType(fieldType);
         return mExtractors.containsKey(type) ? mExtractors.get(type) : new RecursiveExtractor(type);
+
+    }
+
+    private Class<?> getType(Field fieldType) {
+        Class<?> type = fieldType.getType();
+
+        if (type.isEnum()) {
+            return Enum.class;
+        } else {
+            return type;
+        }
     }
 }

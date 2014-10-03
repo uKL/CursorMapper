@@ -13,7 +13,7 @@ public class RecursiveExtractor implements ColumnExtractor {
     }
 
     @Override
-    public Object extract(Cursor cursor, int columnIndex) {
+    public Object extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return mAnnotatedCursorMapper.toObject(cursor);
     }
 }

@@ -17,11 +17,18 @@ package cursor.mapper.cursor.extractor;
 
 import android.database.Cursor;
 
-public class IntExtractor implements ColumnExtractor {
+public class EnumExtractor implements ColumnExtractor {
 
-    @Override
-    public Integer extract(Class<?> targetType, Cursor cursor, int columnIndex) {
-        return cursor.getInt(columnIndex);
+    StringExtractor mStringExtractor;
+
+    public EnumExtractor(StringExtractor stringExtractor) {
+        mStringExtractor = stringExtractor;
     }
 
+    @Override
+    public Enum extract(Class<?> targetType, Cursor cursor, int columnIndex) {
+        String enumValue = mStringExtractor.extract(targetType, cursor, columnIndex);
+        Class<? extends Enum> target = (Class<? extends Enum>) targetType;
+        return Enum.valueOf(target, enumValue);
+    }
 }

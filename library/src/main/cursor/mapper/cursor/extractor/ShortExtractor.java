@@ -20,7 +20,7 @@ import android.database.Cursor;
 public class ShortExtractor implements ColumnExtractor {
 
     @Override
-    public Short extract(Cursor cursor, int columnIndex) {
+    public Short extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return cursor.getShort(columnIndex);
     }
 

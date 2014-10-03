@@ -20,7 +20,7 @@ import android.database.Cursor;
 public class FloatExtractor implements ColumnExtractor {
 
     @Override
-    public Float extract(Cursor cursor, int columnIndex) {
+    public Float extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return cursor.getFloat(columnIndex);
     }
 

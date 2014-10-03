@@ -20,7 +20,7 @@ import android.database.Cursor;
 public class LongExtractor implements ColumnExtractor {
 
     @Override
-    public Long extract(Cursor cursor, int columnIndex) {
+    public Long extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return cursor.getLong(columnIndex);
     }
 

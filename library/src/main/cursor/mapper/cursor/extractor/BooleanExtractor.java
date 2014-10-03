@@ -20,7 +20,23 @@ import android.database.Cursor;
 public class BooleanExtractor implements ColumnExtractor {
 
     @Override
-    public Boolean extract(Cursor cursor, int columnIndex) {
-        return cursor.getInt(columnIndex) == 1;
+    public Boolean extract(Class<?> targetType, Cursor cursor, int columnIndex) {
+        String cursorString = cursor.getString(columnIndex);
+
+        if (isNumeric(cursorString)) {
+            return Integer.parseInt(cursorString) == 1;
+        } else {
+            return Boolean.parseBoolean(cursorString);
+        }
+    }
+
+    private boolean isNumeric(String cursorString) {
+
+        try {
+            Double.parseDouble(cursorString);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 }

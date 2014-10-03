@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cursor.mapper.cursor.extractor;
 
 import android.database.Cursor;
 
-public class IntExtractor implements ColumnExtractor {
+public class ByteExtractor implements ColumnExtractor {
 
     @Override
-    public Integer extract(Class<?> targetType, Cursor cursor, int columnIndex) {
-        return cursor.getInt(columnIndex);
+    public Byte extract(Class<?> targetType, Cursor cursor, int columnIndex) {
+        return (byte) cursor.getInt(columnIndex);
     }
-
 }

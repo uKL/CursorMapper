@@ -21,7 +21,7 @@ import android.database.Cursor;
 public class BlobExtractor implements ColumnExtractor {
 
     @Override
-    public byte[] extract(Cursor cursor, int columnIndex) {
+    public byte[] extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return cursor.getBlob(columnIndex);
     }
 

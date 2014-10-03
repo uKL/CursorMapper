@@ -21,7 +21,7 @@ import android.database.Cursor;
 public class StringExtractor implements ColumnExtractor {
 
     @Override
-    public String extract(Cursor cursor, int columnIndex) {
+    public String extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return cursor.getString(columnIndex);
     }
 

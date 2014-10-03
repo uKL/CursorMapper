@@ -20,7 +20,7 @@ import android.database.Cursor;
 public class DoubleExtractor implements ColumnExtractor {
 
     @Override
-    public Double extract(Cursor cursor, int columnIndex) {
+    public Double extract(Class<?> targetType, Cursor cursor, int columnIndex) {
         return cursor.getDouble(columnIndex);
     }
 }

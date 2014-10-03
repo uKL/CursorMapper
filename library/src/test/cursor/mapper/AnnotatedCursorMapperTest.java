@@ -6,6 +6,7 @@ import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.fest.assertions.api.ANDROID.assertThat;
 
 import android.content.ContentValues;
+import android.database.MatrixCursor;
 
 import org.fest.assertions.Assertions;
 import org.fest.assertions.api.android.content.ContentValuesEntry;
@@ -19,6 +20,8 @@ import cursor.mapper.models.FlatMappedModel;
 import cursor.mapper.models.FlatMappedModelWithPrivateFields;
 import cursor.mapper.models.ModelNotAnnotated;
 import cursor.mapper.models.NestedMappedModel;
+import cursor.mapper.models.NestedWithoutAnnotationMappedModel;
+import cursor.mapper.models.SomeEnum;
 
 @RunWith(RobolectricTestRunner.class)
 public class AnnotatedCursorMapperTest {
@@ -31,6 +34,96 @@ public class AnnotatedCursorMapperTest {
     @Before
     public void setUp() throws Exception {
         objectUnderTest = new AnnotatedCursorMapper(FlatMappedModel.class);
+        flatModel.populate();
+    }
+
+    @Test
+    public void shouldDeserializeFlatClassFromCursor() throws Exception {
+        // given
+        MatrixCursor cursor = createFullCursor();
+        cursor.moveToFirst();
+
+        // when
+        FlatMappedModel model = (FlatMappedModel) objectUnderTest.toObject(cursor);
+
+        // then
+        Assertions.assertThat(model.aInt).isEqualTo(1);
+        Assertions.assertThat(model.aLong).isEqualTo(1L);
+        Assertions.assertThat(model.aShort).isEqualTo((short) 1);
+        Assertions.assertThat(model.aByte).isEqualTo((byte) 1);
+        Assertions.assertThat(model.aFloat).isEqualTo(1.5f);
+        Assertions.assertThat(model.aDouble).isEqualTo(1d);
+        Assertions.assertThat(model.aBoolean).isTrue();
+        Assertions.assertThat(model.aStringBoolean).isTrue();
+        Assertions.assertThat(model.aString).isEqualTo("any-string");
+        Assertions.assertThat(model.aNullString).isNull();
+        Assertions.assertThat(model.aEnum).isEqualTo(SomeEnum.TEST_VALUE);
+        Assertions.assertThat(model.aByteArray).isEqualTo("any-string".getBytes());
+    }
+
+    private MatrixCursor createFullCursor() {
+        String[] columns = { "aInt", "aLong", "aShort", "aByte", "aFloat", //
+                "aDouble", "aBoolean", "aStringBoolean", "aString", "aNullString", "aEnum", "aByteArray", "secondInt"};
+        MatrixCursor cursor = new MatrixCursor(columns);
+        cursor.addRow(new Object[]{ 1, 1L, (short) 1, (byte) 1, 1.5f, //
+                1d, "1", true, "any-string", null, SomeEnum.TEST_VALUE.name(), "any-string".getBytes() , 667 });
+        return cursor;
+    }
+
+    @Test
+    public void shouldDeserializePrivateField() throws Exception {
+        // given
+        objectUnderTest = new AnnotatedCursorMapper(FlatMappedModelWithPrivateFields.class);
+        MatrixCursor cursor = createFullCursor();
+        cursor.moveToFirst();
+
+        // when
+        FlatMappedModelWithPrivateFields model = (FlatMappedModelWithPrivateFields) objectUnderTest.toObject(cursor);
+
+        // then
+        Assertions.assertThat(model.getPrivateFieldValue()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldDeserializeNestedClassFromCursor() throws Exception {
+        // given
+        objectUnderTest = new AnnotatedCursorMapper(NestedMappedModel.class);
+        MatrixCursor cursor = createFullCursor();
+        cursor.moveToFirst();
+
+        // when
+        NestedMappedModel model = (NestedMappedModel) objectUnderTest.toObject(cursor);
+
+        // then
+        Assertions.assertThat(model.nested.aInt).isEqualTo(1);
+        Assertions.assertThat(model.nested.aLong).isEqualTo(1L);
+        Assertions.assertThat(model.nested.aShort).isEqualTo((short) 1);
+        Assertions.assertThat(model.nested.aByte).isEqualTo((byte) 1);
+        Assertions.assertThat(model.nested.aFloat).isEqualTo(1.5f);
+        Assertions.assertThat(model.nested.aDouble).isEqualTo(1d);
+        Assertions.assertThat(model.nested.aBoolean).isTrue();
+        Assertions.assertThat(model.nested.aStringBoolean).isTrue();
+        Assertions.assertThat(model.nested.aString).isEqualTo("any-string");
+        Assertions.assertThat(model.nested.aNullString).isNull();
+        Assertions.assertThat(model.nested.aEnum).isEqualTo(SomeEnum.TEST_VALUE);
+        Assertions.assertThat(model.nested.aByteArray).isEqualTo("any-string".getBytes());
+        Assertions.assertThat(model.aSecondInt).isEqualTo(667);
+    }
+
+
+    @Test
+    public void shouldNotDeserializeNestedClassWithoutAnnotationFromCursor() throws Exception {
+        // given
+        objectUnderTest = new AnnotatedCursorMapper(NestedWithoutAnnotationMappedModel.class);
+        MatrixCursor cursor = createFullCursor();
+        cursor.moveToFirst();
+
+        // when
+        NestedWithoutAnnotationMappedModel model = (NestedWithoutAnnotationMappedModel) objectUnderTest.toObject(cursor);
+
+        // then
+        Assertions.assertThat(model.nested).isNull();
+        Assertions.assertThat(model.aSecondInt).isEqualTo(667);
     }
 
     @Test

@@ -47,7 +47,7 @@ public class CursorExtractor {
             return null;
         }
 
-        return columnExtractor.extract(cursor, columnIndex);
+        return columnExtractor.extract(fieldType.getType(), cursor, columnIndex);
     }
 
     public boolean hasColumn(Cursor cursor, String columnName) {

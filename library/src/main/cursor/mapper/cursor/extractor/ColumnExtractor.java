@@ -20,6 +20,6 @@ import android.database.Cursor;
 
 public interface ColumnExtractor {
 
-    Object extract(Cursor cursor, int columnIndex);
+    Object extract(Class<?> targetType, Cursor cursor, int columnIndex);
 
 }
