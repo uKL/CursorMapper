@@ -25,3 +25,4 @@ local.properties
 
 # Mvn Target
 library/target
+example/target

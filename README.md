@@ -8,6 +8,8 @@ This is a basic ORM that can translate your objects to ContentValues and Cursor 
 Todo list
 _________
 * Examples
+* More examples
+* Performance testing
 
 Build
 _________
