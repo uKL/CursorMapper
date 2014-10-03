@@ -229,8 +229,7 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
     private void validateNotNull(Object object) {
 
         if (object == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Model cannot be null");
         }
     }
-
 }

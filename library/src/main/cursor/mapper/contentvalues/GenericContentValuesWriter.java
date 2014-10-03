@@ -27,6 +27,7 @@ public class GenericContentValuesWriter {
     }
 
     public void put(String columnName, Object object) {
+        validateColumnName(columnName);
 
         if (object == null) {
             mValues.putNull(columnName);
@@ -53,7 +54,14 @@ public class GenericContentValuesWriter {
         } else if (object instanceof Enum) {
             mValues.put(columnName, ((Enum) object).name());
         } else {
-            throw new IllegalArgumentException("can't put " + object.getClass().getName() + " in ContentValues.");
+            throw new IllegalArgumentException("Unable to put " + object.getClass().getName() + " in ContentValues.");
+        }
+    }
+
+    private void validateColumnName(String columnName) {
+
+        if (columnName == null || columnName.length() == 0) {
+            throw new IllegalArgumentException("Column name is required");
         }
     }
 }

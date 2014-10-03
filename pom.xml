@@ -67,6 +67,21 @@
                 <version>2.3</version>
             </dependency>
             <dependency>
+                <groupId>com.googlecode.catch-exception</groupId>
+                <artifactId>catch-exception</artifactId>
+                <version>1.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.easytesting</groupId>
+                <artifactId>fest-assert</artifactId>
+                <version>1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup</groupId>
+                <artifactId>fest-android</artifactId>
+                <version>1.0.8</version>
+            </dependency>
+            <dependency>
                 <groupId>com.jakewharton.timber</groupId>
                 <artifactId>timber</artifactId>
                 <version>2.4.0</version>

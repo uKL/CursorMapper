@@ -23,5 +23,4 @@ public class DoubleExtractor implements ColumnExtractor {
     public Double extract(Cursor cursor, int columnIndex) {
         return cursor.getDouble(columnIndex);
     }
-
 }
