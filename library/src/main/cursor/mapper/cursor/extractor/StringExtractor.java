@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package cursor.mapper;
+package cursor.mapper.cursor.extractor;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 
-import java.util.List;
+public class StringExtractor implements ColumnExtractor {
 
-public interface CursorMapper<T> {
-    T toObject(Cursor cursor);
+    @Override
+    public String extract(Cursor cursor, int columnIndex) {
+        return cursor.getString(columnIndex);
+    }
 
-    ContentValues toContentValues(T model);
-
-    List<T> toObjectList(Cursor cursor);
-
-    List<T> toObjectList(Cursor cursor, int limit, boolean moveToFirst);
 }

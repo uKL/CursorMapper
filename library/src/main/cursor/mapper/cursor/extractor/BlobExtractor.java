@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package cursor.mapper.cursor.extractor;
 
 import android.database.Cursor;
 
-public class LongExtractor implements ColumnExtractor {
+public class BlobExtractor implements ColumnExtractor {
 
     @Override
-    public Long extract(Cursor cursor, int columnIndex) {
-        return cursor.getLong(columnIndex);
+    public byte[] extract(Cursor cursor, int columnIndex) {
+        return cursor.getBlob(columnIndex);
     }
 
 }

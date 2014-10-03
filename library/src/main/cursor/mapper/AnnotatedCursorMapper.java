@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package cursor.mapper;
 
 import static android.text.TextUtils.isEmpty;
 
-import static cursor.mapper.log.LogUtils.LOGW;
-import static cursor.mapper.log.LogUtils.makeLogTag;
+import static timber.log.Timber.w;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -36,12 +35,10 @@ import cursor.mapper.cursor.CursorExtractor;
 
 public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
 
-    public static final String TAG = makeLogTag(AnnotatedCursorMapper.class);
     public static final int NO_LIMIT = 0;
     private HashMap<Field, String> mAnnotationValues;
     private Class<S> mClazz;
     private CursorExtractor mCursorExtractor;
-    private AnnotationCache mAnnotationCache;
     private boolean mIsIgnoringNull = false;
 
     public AnnotatedCursorMapper(Class<S> clazz) {
@@ -51,12 +48,11 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
     public AnnotatedCursorMapper(CursorExtractor extractor, Class<S> clazz) {
         mCursorExtractor = extractor;
         mClazz = clazz;
-        setAnnotationCache(AnnotationCache.getInstance());
         initializeAnnotationValues(getAnnotatedFields(clazz));
     }
 
-    public void setAnnotationCache(AnnotationCache annotationCache) {
-        mAnnotationCache = annotationCache;
+    public void setIgnoringNull(boolean isIgnoringNull) {
+        mIsIgnoringNull = isIgnoringNull;
     }
 
     @Override
@@ -111,24 +107,17 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
         }
 
         return objects;
-
-    }
-
-    private void cacheAnnotatedFields(Class<S> clazz, List<Field> annotatedFields) {
-
-        if (mAnnotationCache != null) {
-            mAnnotationCache.put(clazz, annotatedFields);
-        }
     }
 
     private S createInstance() {
+
         try {
-            return (S) mClazz.newInstance();
+            return mClazz.newInstance();
         } catch (InstantiationException e) {
-            LOGW(TAG, "Unable to instantiate model: " + mClazz);
+            w("Unable to instantiate model: " + mClazz);
             return null;
         } catch (IllegalAccessException e) {
-            LOGW(TAG, "Unable to instantiate model: " + mClazz);
+            w("Unable to instantiate model: " + mClazz);
             return null;
         }
     }
@@ -155,43 +144,39 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
 
     private List<Field> getAnnotatedFields(Class<S> clazz) {
 
-        if (mAnnotationCache != null && mAnnotationCache.contains(clazz)) {
-            return mAnnotationCache.get(clazz);
-        } else {
-            List<Field> annotatedFields = new ArrayList<Field>();
+        List<Field> annotatedFields = new ArrayList<Field>();
 
-            for (Field field : clazz.getDeclaredFields()) {
+        for (Field field : clazz.getDeclaredFields()) {
 
-                if (hasMappingAnnotation(field)) {
-                    annotatedFields.add(field);
-                }
+            if (hasMappingAnnotation(field)) {
+                annotatedFields.add(field);
             }
-
-            cacheAnnotatedFields(clazz, annotatedFields);
-            return annotatedFields;
         }
+
+        return annotatedFields;
     }
 
     private Object getFieldValue(S model, Field field) {
+
         try {
-            return field.get(model);
+            field.setAccessible(true);
+            Object value = field.get(model);
+            field.setAccessible(false);
+            return value;
         } catch (IllegalArgumentException e) {
-            LOGW(TAG, "Unable to get field value");
+            w("Unable to get field value");
             return null;
         } catch (IllegalAccessException e) {
-            LOGW(TAG, "Unable to get field value");
+            w("Unable to get field value");
             return null;
         }
-    }
-
-    private boolean hasInCache(Class<S> clazz) {
-        return mAnnotationCache != null && mAnnotationCache.contains(clazz);
     }
 
     private boolean hasMappingAnnotation(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
 
         for (Annotation annotation : annotations) {
+
             if (annotation instanceof CursorName) {
                 return true;
             }
@@ -233,14 +218,16 @@ public class AnnotatedCursorMapper<S> implements CursorMapper<S> {
         try {
             field.setAccessible(true);
             field.set(model, extractedValue);
+            field.setAccessible(false);
         } catch (IllegalArgumentException e) {
-            LOGW(TAG, "Unable to set field: " + field);
+            w("Unable to set field: " + field);
         } catch (IllegalAccessException e) {
-            LOGW(TAG, "Unable to set field: " + field);
+            w("Unable to set field: " + field);
         }
     }
 
     private void validateNotNull(Object object) {
+
         if (object == null) {
             throw new IllegalArgumentException();
         }

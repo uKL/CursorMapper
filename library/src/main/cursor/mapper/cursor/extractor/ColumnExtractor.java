@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,8 @@ package cursor.mapper.cursor.extractor;
 
 import android.database.Cursor;
 
-public class StringExtractor implements ColumnExtractor {
+public interface ColumnExtractor {
 
-    @Override
-    public String extract(Cursor cursor, int columnIndex) {
-        return cursor.getString(columnIndex);
-    }
+    Object extract(Cursor cursor, int columnIndex);
 
 }

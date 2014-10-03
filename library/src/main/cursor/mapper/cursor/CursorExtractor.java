@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package cursor.mapper.cursor;
 
-import static cursor.mapper.log.LogUtils.LOGW;
-import static cursor.mapper.log.LogUtils.makeLogTag;
+import static timber.log.Timber.w;
 
 import android.database.Cursor;
 
@@ -28,7 +27,6 @@ import cursor.mapper.cursor.extractor.ColumnExtractorFactory;
 
 public class CursorExtractor {
 
-    public static final String TAG = makeLogTag(CursorExtractor.class);
     private ColumnExtractorFactory mColumnExtractorFactory;
 
     public CursorExtractor() {
@@ -45,7 +43,7 @@ public class CursorExtractor {
         ColumnExtractor columnExtractor = mColumnExtractorFactory.get(fieldType);
 
         if (columnExtractor == null) {
-            LOGW(TAG, "Unsupported column type: " + fieldType);
+            w("Unsupported column type: " + fieldType);
             return null;
         }
 

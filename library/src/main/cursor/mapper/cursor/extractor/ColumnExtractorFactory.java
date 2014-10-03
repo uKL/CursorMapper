@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package cursor.mapper.cursor.extractor;
 
-import static cursor.mapper.log.LogUtils.LOGV;
-import static cursor.mapper.log.LogUtils.makeLogTag;
+import static timber.log.Timber.v;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -30,35 +29,29 @@ public class ColumnExtractorFactory {
         public static final ColumnExtractorFactory INSTANCE = new ColumnExtractorFactory();
     }
 
-    public static ColumnExtractorFactory getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-
     private Map<Class<?>, ColumnExtractor> mExtractors = new HashMap<Class<?>, ColumnExtractor>();
-
-    public static final String TAG = makeLogTag(ColumnExtractorFactory.class);
 
     public ColumnExtractorFactory() {
         addExtractor(String.class, new StringExtractor());
-        
+
         LongExtractor longExtractor = new LongExtractor();
         addExtractor(long.class, longExtractor);
         addExtractor(Long.class, longExtractor);
-        
+
         DoubleExtractor doubleExtractor = new DoubleExtractor();
         addExtractor(Double.class, doubleExtractor);
         addExtractor(double.class, doubleExtractor);
-        
+
         addExtractor(byte[].class, new BlobExtractor());
-        
+
         FloatExtractor floatExtractor = new FloatExtractor();
         addExtractor(float.class, floatExtractor);
         addExtractor(Float.class, floatExtractor);
-        
+
         IntExtractor intExtractor = new IntExtractor();
         addExtractor(int.class, intExtractor);
         addExtractor(Integer.class, intExtractor);
-        
+
         ShortExtractor shortExtractor = new ShortExtractor();
         addExtractor(short.class, shortExtractor);
         addExtractor(Short.class, shortExtractor);
@@ -68,8 +61,12 @@ public class ColumnExtractorFactory {
         addExtractor(Boolean.class, booleanExtractor);
     }
 
+    public static ColumnExtractorFactory getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
     public void addExtractor(Class<?> type, ColumnExtractor extractor) {
-        LOGV(TAG, "Adding extractor for type: " + type);
+        v("Adding extractor for type: " + type);
         mExtractors.put(type, extractor);
     }
 

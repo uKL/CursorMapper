@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paweł Urban<pawel.urban@allegro.pl>
+ * Copyright (C) 2014 Paweł Urban<pawel.urban@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package cursor.mapper.contentvalues;
 import android.content.ContentValues;
 
 public class GenericContentValuesWriter {
+
     private ContentValues mValues;
 
     public GenericContentValuesWriter(ContentValues contentValues) {
@@ -26,6 +27,7 @@ public class GenericContentValuesWriter {
     }
 
     public void put(String columnName, Object object) {
+
         if (object == null) {
             mValues.putNull(columnName);
         } else if (object instanceof Boolean) {
@@ -48,9 +50,10 @@ public class GenericContentValuesWriter {
             mValues.put(columnName, (byte[]) object);
         } else if (object instanceof ContentValues) {
             mValues.putAll((ContentValues) object);
+        } else if (object instanceof Enum) {
+            mValues.put(columnName, ((Enum) object).name());
         } else {
-            throw new IllegalArgumentException(
-                    "can't put " + object.getClass().getName() + " in ContentValues.");
+            throw new IllegalArgumentException("can't put " + object.getClass().getName() + " in ContentValues.");
         }
     }
 }
