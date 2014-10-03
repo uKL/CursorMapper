@@ -3,23 +3,22 @@ package cursor.mapper.contentvalues;
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import android.content.ContentValues;
 
 import org.fest.assertions.api.ANDROID;
+import org.fest.assertions.api.Assertions;
 import org.fest.assertions.api.android.content.ContentValuesEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import cursor.mapper.models.SomeEnum;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class GenericContentValuesWriterTest {
-
-    public enum TestEnum {
-        FIRST, SECOND
-    }
 
     public static class NotSupportedClass {
 
@@ -120,10 +119,10 @@ public class GenericContentValuesWriterTest {
         String columnName = "valid-column-name";
 
         // when
-        objectUnderTest.put(columnName, TestEnum.FIRST);
+        objectUnderTest.put(columnName, SomeEnum.TEST_VALUE);
 
         // then
-        ANDROID.assertThat(contentValues).contains(ContentValuesEntry.entry(columnName, TestEnum.FIRST.name()));
+        ANDROID.assertThat(contentValues).contains(ContentValuesEntry.entry(columnName, SomeEnum.TEST_VALUE.name()));
     }
 
     @Test
@@ -208,7 +207,7 @@ public class GenericContentValuesWriterTest {
         catchException(objectUnderTest).put(columnName, savedObject);
 
         // then
-        assertThat(caughtException()).isInstanceOf(IllegalArgumentException.class).hasMessage(
+        Assertions.assertThat(caughtException()).isInstanceOf(IllegalArgumentException.class).hasMessage(
                 "Unable to put " + savedObject.getClass().getName() + " in ContentValues.");
     }
 
@@ -222,7 +221,8 @@ public class GenericContentValuesWriterTest {
         catchException(objectUnderTest).put(columnName, savedObject);
 
         // then
-        assertThat(caughtException()).isInstanceOf(IllegalArgumentException.class).hasMessage("Column name is required");
+        Assertions.assertThat(caughtException()).isInstanceOf(IllegalArgumentException.class).hasMessage("Column name is " +
+                "required");
     }
 
     @Test
@@ -235,6 +235,6 @@ public class GenericContentValuesWriterTest {
         catchException(objectUnderTest).put(columnName, savedObject);
 
         // then
-        assertThat(caughtException()).isInstanceOf(IllegalArgumentException.class).hasMessage("Column name is required");
+        Assertions.assertThat(caughtException()).isInstanceOf(IllegalArgumentException.class).hasMessage("Column name is required");
     }
 }
