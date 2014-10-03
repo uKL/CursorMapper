@@ -10,6 +10,7 @@ _________
 * Travis CI
 * Checkstyle
 * Examples
+
 Build
 _________
 [![Build Status](https://travis-ci.org/uKL/CursorMapper.svg?branch=master)](https://travis-ci.org/uKL/CursorMapper)
